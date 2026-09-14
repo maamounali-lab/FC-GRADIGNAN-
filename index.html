@@ -35,7 +35,7 @@
                         <img :src="teamLogo" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80'">
                     </div>
                     <div>
-                        <span class="text-xs font-bold text-plCyan uppercase tracking-widest bg-plPurple-900/80 px-2.5 py-1 rounded-md border border-plCyan/30">Saison 2026/27</span>
+                        <span class="text-xs font-bold text-plCyan uppercase tracking-widest bg-plPurple-900/80 px-2.5 py-1 rounded-md border border-plCyan/30" x-text="seasonName"></span>
                         <h1 class="text-2xl font-black text-white mt-1 tracking-tight" x-text="teamName"></h1>
                     </div>
                 </div>
@@ -212,15 +212,23 @@
 
             <div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
                 
-                <!-- General Info & Photo Upload -->
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- General Info, Season, PIN Code & Photo Upload -->
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Nom de l'équipe</label>
                         <input type="text" x-model="teamName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold">
                     </div>
                     <div>
+                        <label class="block text-xs text-slate-400 mb-1">Saison en cours (ex: Saison 2026/27)</label>
+                        <input type="text" x-model="seasonName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-plCyan font-bold">
+                    </div>
+                    <div>
                         <label class="block text-xs text-slate-400 mb-1">Classement Actuel (#)</label>
                         <input type="number" x-model.number="rank" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-amber-400 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Nouveau Code PIN (Min. 6 chiffres)</label>
+                        <input type="password" x-model="newAdminPin" placeholder="Laisser vide pour garder l'actuel" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Taille du Texte</label>
@@ -230,7 +238,7 @@
                             <option value="text-lg">Grand (Lisible)</option>
                         </select>
                     </div>
-                    <div class="sm:col-span-3">
+                    <div class="sm:col-span-2 lg:col-span-3">
                         <label class="block text-xs text-slate-400 mb-1">Télécharger le logo / photo de l'équipe</label>
                         <input type="file" accept="image/*" @change="uploadLogo($event)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 cursor-pointer">
                     </div>
@@ -273,7 +281,7 @@
                 <!-- Matchweeks Editor (Flexible Match Count) -->
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-plCyan">📅 Gestion des Journées & Matchs (1 à 3+ matchs par journée)</h3>
+                        <h3 class="text-xs font-bold text-plCyan">📅 Gestion des Journées (Nombre de matchs libre)</h3>
                         <button @click="addMatchWeek()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ Ajouter une Journée</button>
                     </div>
 
@@ -296,7 +304,7 @@
                                             <span class="font-bold text-plCyan" x-text="match.round"></span>
                                             <div class="flex items-center gap-3">
                                                 <input type="text" x-model="match.status" class="bg-slate-950 border border-slate-700 rounded px-2 py-0.5 text-xs text-emerald-400 w-28 text-center">
-                                                <button @click="week.matches.splice(mIdx, 1)" class="text-plPink text-xs font-bold">🗑️ Supprimer ce match</button>
+                                                <button @click="week.matches.splice(mIdx, 1)" class="text-plPink text-xs font-bold">🗑️ Supprimer</button>
                                             </div>
                                         </div>
 
@@ -344,7 +352,6 @@
                                     </div>
                                 </template>
 
-                                <!-- Button to add a match to this specific day -->
                                 <button @click="week.matches.push({id: Date.now(), round: 'Match ' + (week.matches.length + 1), opponent: allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', scorers: []})" class="w-full bg-slate-900 hover:bg-slate-850 text-plCyan border border-plCyan/30 py-2 rounded-xl text-xs font-bold transition">
                                     + Ajouter un match à cette journée
                                 </button>
@@ -388,9 +395,13 @@
                 isAdminModalOpen: false,
                 
                 teamName: localStorage.getItem('pl_teamName') || 'FC Gradignan',
+                seasonName: localStorage.getItem('pl_seasonName') || 'Saison 2026/27',
                 rank: parseInt(localStorage.getItem('pl_rank')) || 2,
                 textSize: localStorage.getItem('pl_textSize') || 'text-sm',
                 teamLogo: localStorage.getItem('pl_teamLogo') || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80',
+                
+                adminPin: localStorage.getItem('pl_adminPin') || '123456',
+                newAdminPin: '',
 
                 squad: JSON.parse(localStorage.getItem('pl_squad')) || ['Miloud B.', 'Mamoun B.', 'Florent B.', 'Fred B.'],
                 allOpponents: JSON.parse(localStorage.getItem('pl_allOpponents')) || [
@@ -481,7 +492,7 @@
 
                 checkAdminAccess() {
                     let pin = prompt("Entrez le code PIN administrateur :");
-                    if (pin === "1234") {
+                    if (pin === this.adminPin) {
                         this.isAdmin = true;
                         this.isAdminModalOpen = true;
                     } else if (pin !== null) {
@@ -530,7 +541,19 @@
                 },
 
                 saveData() {
+                    // Check if new PIN is provided and meets requirement (at least 6 characters/numbers)
+                    if (this.newAdminPin.trim() !== '') {
+                        if (this.newAdminPin.trim().length < 6) {
+                            alert("Le nouveau code PIN doit contenir au moins 6 chiffres !");
+                            return;
+                        }
+                        this.adminPin = this.newAdminPin.trim();
+                        localStorage.setItem('pl_adminPin', this.adminPin);
+                        this.newAdminPin = '';
+                    }
+
                     localStorage.setItem('pl_teamName', this.teamName);
+                    localStorage.setItem('pl_seasonName', this.seasonName);
                     localStorage.setItem('pl_rank', this.rank);
                     localStorage.setItem('pl_textSize', this.textSize);
                     localStorage.setItem('pl_teamLogo', this.teamLogo);
