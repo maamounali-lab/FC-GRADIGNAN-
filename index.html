@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -21,6 +23,15 @@
                 }
             }
         }
+
+        // ================= CONFIGURATION SUPABASE =================
+        // Votre URL Supabase est déjà configurée ci-dessous :
+        const SUPABASE_URL = 'https://zfyjurotivwagwuarbpy.supabase.co';       
+        
+        // PASTEZ VOTRE CLÉ ICI (GARDER LES GUILLEMETS SIMPLES ' ')
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmeWp1cm90aXZ3YWd3dWFyYnB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzOTk1NDgsImV4cCI6MjEwNDk3NTU0OH0.wkRu1dqUttUgiVvJMptUSEOZ0ZaMwTjjiojlZi_UJzk'; 
+        
+        window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     </script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased transition-all duration-300" :class="textSizeClass">
@@ -206,7 +217,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 space-y-6 shadow-2xl my-8">
             
             <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">⚙️ Panneau d'Administration</h2>
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">⚙️ Panneau d'Administration (Cloud Synced)</h2>
                 <button @click="isAdminModalOpen = false" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
             </div>
 
@@ -219,7 +230,7 @@
                         <input type="text" x-model="teamName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">Saison en cours (ex: Saison 2026/27)</label>
+                        <label class="block text-xs text-slate-400 mb-1">Saison en cours</label>
                         <input type="text" x-model="seasonName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-plCyan font-bold">
                     </div>
                     <div>
@@ -278,7 +289,7 @@
                     </div>
                 </div>
 
-                <!-- Matchweeks Editor (Flexible Match Count) -->
+                <!-- Matchweeks Editor -->
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <h3 class="text-xs font-bold text-plCyan">📅 Gestion des Journées (Nombre de matchs libre)</h3>
@@ -296,7 +307,6 @@
                                 <button @click="matchWeeks.splice(wIdx, 1)" class="text-plPink text-xs font-bold">Supprimer la Journée</button>
                             </div>
 
-                            <!-- Dynamic Matches List for this Journée -->
                             <div class="space-y-3">
                                 <template x-for="(match, mIdx) in week.matches" :key="match.id">
                                     <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
@@ -364,18 +374,37 @@
 
             <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
                 <button @click="isAdminModalOpen = false" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold">Fermer</button>
-                <button @click="saveData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-xs font-bold shadow-lg">Enregistrer</button>
+                <button @click="saveData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-xs font-bold shadow-lg">Enregistrer & Sync Cloud</button>
             </div>
         </div>
     </div>
 
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC WITH SUPABASE SYNC -->
     <script>
         function plDashboard() {
-            let savedWeeks = JSON.parse(localStorage.getItem('pl_matchWeeks_v4'));
-            if (!savedWeeks) {
-                savedWeeks = [
+            return {
+                activeTab: 'matches',
+                isAdmin: false,
+                isAdminModalOpen: false,
+                
+                teamName: 'FC Gradignan',
+                seasonName: 'Saison 2026/27',
+                rank: 2,
+                textSize: 'text-sm',
+                teamLogo: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80',
+                adminPin: '123456',
+                newAdminPin: '',
+
+                squad: ['Miloud B.', 'Mamoun B.', 'Florent B.', 'Fred B.'],
+                allOpponents: [
+                    'St Bruno', 'Eysines', 'Stade Bordelais', 'Pierroton', 
+                    'BEC A', 'Blanquefort', 'Chantecler', 'AS Magonty A', 'Municipaux Villenave', 
+                    'Jeunesse Villenavaise', 'Stade Marennes', 'US Bouscat', 'CA Peyberland'
+                ],
+
+                selectedWeek: 'week_1',
+                matchWeeks: [
                     {
                         id: 'week_1',
                         name: 'Journée 1',
@@ -386,32 +415,31 @@
                             { id: 3, round: 'Match 3', opponent: 'Stade Bordelais', timeAndPitch: '14:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', scorers: [] }
                         ]
                     }
-                ];
-            }
-
-            return {
-                activeTab: 'matches',
-                isAdmin: false,
-                isAdminModalOpen: false,
-                
-                teamName: localStorage.getItem('pl_teamName') || 'FC Gradignan',
-                seasonName: localStorage.getItem('pl_seasonName') || 'Saison 2026/27',
-                rank: parseInt(localStorage.getItem('pl_rank')) || 2,
-                textSize: localStorage.getItem('pl_textSize') || 'text-sm',
-                teamLogo: localStorage.getItem('pl_teamLogo') || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80',
-                
-                adminPin: localStorage.getItem('pl_adminPin') || '123456',
-                newAdminPin: '',
-
-                squad: JSON.parse(localStorage.getItem('pl_squad')) || ['Miloud B.', 'Mamoun B.', 'Florent B.', 'Fred B.'],
-                allOpponents: JSON.parse(localStorage.getItem('pl_allOpponents')) || [
-                    'St Bruno', 'Eysines', 'Stade Bordelais', 'Pierroton', 
-                    'BEC A', 'Blanquefort', 'Chantecler', 'AS Magonty A', 'Municipaux Villenave', 
-                    'Jeunesse Villenavaise', 'Stade Marennes', 'US Bouscat', 'CA Peyberland'
                 ],
 
-                selectedWeek: savedWeeks[0] ? savedWeeks[0].id : 'week_1',
-                matchWeeks: savedWeeks,
+                // Load data from Supabase on startup
+                async init() {
+                    try {
+                        let { data, error } = await window._supabase.from('app_data').select('state').eq('id', 1).single();
+                        if (data && data.state && Object.keys(data.state).length > 0) {
+                            let s = data.state;
+                            this.teamName = s.teamName || this.teamName;
+                            this.seasonName = s.seasonName || this.seasonName;
+                            this.rank = s.rank !== undefined ? s.rank : this.rank;
+                            this.textSize = s.textSize || this.textSize;
+                            this.teamLogo = s.teamLogo || this.teamLogo;
+                            this.adminPin = s.adminPin || this.adminPin;
+                            this.squad = s.squad || this.squad;
+                            this.allOpponents = s.allOpponents || this.allOpponents;
+                            this.matchWeeks = s.matchWeeks || this.matchWeeks;
+                            if (this.matchWeeks.length > 0) {
+                                this.selectedWeek = this.matchWeeks[0].id;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Erreur chargement cloud:', e);
+                    }
+                },
 
                 get currentWeekData() {
                     return this.matchWeeks.find(w => w.id === this.selectedWeek) || this.matchWeeks[0];
@@ -491,7 +519,7 @@
                 },
 
                 checkAdminAccess() {
-                    let pin = prompt("Entrez le code PIN administrateur :");
+                    let pin = prompt("Entrez le code PIN administrateur (Défaut: 123456) :");
                     if (pin === this.adminPin) {
                         this.isAdmin = true;
                         this.isAdminModalOpen = true;
@@ -540,28 +568,38 @@
                     this.selectedWeek = id;
                 },
 
-                saveData() {
-                    // Check if new PIN is provided and meets requirement (at least 6 characters/numbers)
+                // Save data to Supabase Cloud Database
+                async saveData() {
                     if (this.newAdminPin.trim() !== '') {
                         if (this.newAdminPin.trim().length < 6) {
                             alert("Le nouveau code PIN doit contenir au moins 6 chiffres !");
                             return;
                         }
                         this.adminPin = this.newAdminPin.trim();
-                        localStorage.setItem('pl_adminPin', this.adminPin);
                         this.newAdminPin = '';
                     }
 
-                    localStorage.setItem('pl_teamName', this.teamName);
-                    localStorage.setItem('pl_seasonName', this.seasonName);
-                    localStorage.setItem('pl_rank', this.rank);
-                    localStorage.setItem('pl_textSize', this.textSize);
-                    localStorage.setItem('pl_teamLogo', this.teamLogo);
-                    localStorage.setItem('pl_squad', JSON.stringify(this.squad));
-                    localStorage.setItem('pl_allOpponents', JSON.stringify(this.allOpponents));
-                    localStorage.setItem('pl_matchWeeks_v4', JSON.stringify(this.matchWeeks));
-                    this.isAdminModalOpen = false;
-                    alert('Données enregistrées avec succès !');
+                    let payload = {
+                        teamName: this.teamName,
+                        seasonName: this.seasonName,
+                        rank: this.rank,
+                        textSize: this.textSize,
+                        teamLogo: this.teamLogo,
+                        adminPin: this.adminPin,
+                        squad: this.squad,
+                        allOpponents: this.allOpponents,
+                        matchWeeks: this.matchWeeks
+                    };
+
+                    try {
+                        let { error } = await window._supabase.from('app_data').upsert({ id: 1, state: payload });
+                        if (error) throw error;
+                        
+                        this.isAdminModalOpen = false;
+                        alert('Données enregistrées et synchronisées en direct dans le Cloud avec succès !');
+                    } catch (err) {
+                        alert('Erreur lors de la synchronisation : ' + err.message);
+                    }
                 }
             }
         }
