@@ -25,11 +25,8 @@
         }
 
         // ================= CONFIGURATION SUPABASE =================
-        // Votre URL Supabase est déjà configurée ci-dessous :
         const SUPABASE_URL = 'https://zfyjurotivwagwuarbpy.supabase.co';       
-        
-        // PASTEZ VOTRE CLÉ ICI (GARDER LES GUILLEMETS SIMPLES ' ')
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmeWp1cm90aXZ3YWd3dWFyYnB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzOTk1NDgsImV4cCI6MjEwNDk3NTU0OH0.wkRu1dqUttUgiVvJMptUSEOZ0ZaMwTjjiojlZi_UJzk'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmeWp1cm90aXZ3YWd3dWFyYnB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNDk1NTMsImV4cCI6MjA3MzYyNTU1M30.wkRu1dQUtUgiVvJMptUSEOZ0ZaMwTjjiojlZi_UJzk'; 
         
         window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     </script>
@@ -59,7 +56,7 @@
             <!-- TABS NAVIGATION -->
             <div class="flex gap-6 border-b border-white/10 text-sm font-bold">
                 <button @click="activeTab = 'matches'" :class="activeTab === 'matches' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-400 pb-3 hover:text-white'">Matchs</button>
-                <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-400 pb-3 hover:text-white'">Classement & Stats</button>
+                <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-400 pb-3 hover:text-white'">Stats Équipe</button>
                 <button @click="activeTab = 'scorers'" :class="activeTab === 'scorers' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-400 pb-3 hover:text-white'">Buteurs</button>
             </div>
         </div>
@@ -117,6 +114,12 @@
                             </div>
                         </div>
 
+                        <!-- Match Comment / Note -->
+                        <div x-show="match.comment && match.comment.trim() !== ''" class="mt-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 italic flex items-start gap-2">
+                            <span>💬</span>
+                            <span x-text="match.comment"></span>
+                        </div>
+
                     </div>
                 </template>
                 <div x-show="currentWeekData.matches.length === 0" class="text-center text-slate-500 py-8 bg-slate-900 rounded-2xl border border-slate-800">
@@ -131,9 +134,9 @@
             
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400">Classement Général</span>
-                    <div class="text-3xl font-black text-amber-400 mt-1">#<span x-text="rank"></span></div>
-                    <span class="text-[10px] text-slate-500">sur 14 équipes</span>
+                    <span class="text-xs text-slate-400">Moyenne Buts / Match</span>
+                    <div class="text-3xl font-black text-amber-400 mt-1" x-text="avgGoalsPerMatch"></div>
+                    <span class="text-[10px] text-slate-500">buts marqués / match</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
                     <span class="text-xs text-slate-400">Points Totaux (Auto)</span>
@@ -232,10 +235,6 @@
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Saison en cours</label>
                         <input type="text" x-model="seasonName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-plCyan font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Classement Actuel (#)</label>
-                        <input type="number" x-model.number="rank" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-amber-400 font-bold">
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Nouveau Code PIN (Min. 6 chiffres)</label>
@@ -341,6 +340,12 @@
                                             </div>
                                         </div>
 
+                                        <!-- Comment Input in Admin -->
+                                        <div>
+                                            <label class="block text-[10px] text-slate-400">Commentaire libre (Optionnel)</label>
+                                            <input type="text" x-model="match.comment" placeholder="Ex: Terrain glissant, carton rouge, résumé..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200">
+                                        </div>
+
                                         <div class="pt-2 border-t border-slate-800 space-y-2">
                                             <div class="flex justify-between items-center text-[11px]">
                                                 <span class="text-plCyan">Buteurs de ce match :</span>
@@ -362,7 +367,7 @@
                                     </div>
                                 </template>
 
-                                <button @click="week.matches.push({id: Date.now(), round: 'Match ' + (week.matches.length + 1), opponent: allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', scorers: []})" class="w-full bg-slate-900 hover:bg-slate-850 text-plCyan border border-plCyan/30 py-2 rounded-xl text-xs font-bold transition">
+                                <button @click="week.matches.push({id: Date.now(), round: 'Match ' + (week.matches.length + 1), opponent: allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: []})" class="w-full bg-slate-900 hover:bg-slate-850 text-plCyan border border-plCyan/30 py-2 rounded-xl text-xs font-bold transition">
                                     + Ajouter un match à cette journée
                                 </button>
                             </div>
@@ -390,7 +395,6 @@
                 
                 teamName: 'FC Gradignan',
                 seasonName: 'Saison 2026/27',
-                rank: 2,
                 textSize: 'text-sm',
                 teamLogo: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80',
                 adminPin: '123456',
@@ -410,9 +414,9 @@
                         name: 'Journée 1',
                         date: '2026-09-12',
                         matches: [
-                            { id: 1, round: 'Match 1', opponent: 'Eysines', timeAndPitch: '10:00 · Eysines', scoreUs: 3, scoreThem: 1, status: 'Terminé', scorers: [{player: 'Miloud B.', goals: 2}, {player: 'Mamoun B.', goals: 1}] },
-                            { id: 2, round: 'Match 2', opponent: 'St Bruno', timeAndPitch: '11:00 · Terrain 2', scoreUs: 0, scoreThem: 0, status: 'À venir', scorers: [] },
-                            { id: 3, round: 'Match 3', opponent: 'Stade Bordelais', timeAndPitch: '14:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', scorers: [] }
+                            { id: 1, round: 'Match 1', opponent: 'Eysines', timeAndPitch: '10:00 · Eysines', scoreUs: 3, scoreThem: 1, status: 'Terminé', comment: '', scorers: [{player: 'Miloud B.', goals: 2}, {player: 'Mamoun B.', goals: 1}] },
+                            { id: 2, round: 'Match 2', opponent: 'St Bruno', timeAndPitch: '11:00 · Terrain 2', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] },
+                            { id: 3, round: 'Match 3', opponent: 'Stade Bordelais', timeAndPitch: '14:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] }
                         ]
                     }
                 ],
@@ -425,7 +429,6 @@
                             let s = data.state;
                             this.teamName = s.teamName || this.teamName;
                             this.seasonName = s.seasonName || this.seasonName;
-                            this.rank = s.rank !== undefined ? s.rank : this.rank;
                             this.textSize = s.textSize || this.textSize;
                             this.teamLogo = s.teamLogo || this.teamLogo;
                             this.adminPin = s.adminPin || this.adminPin;
@@ -496,6 +499,10 @@
                     let diff = this.goalsFor - this.goalsAgainst;
                     return (diff > 0 ? '+' : '') + diff;
                 },
+                get avgGoalsPerMatch() {
+                    if (this.totalPlayed === 0) return '0.0';
+                    return (this.goalsFor / this.totalPlayed).toFixed(1);
+                },
                 get record() {
                     return `${this.winsCount}-${this.drawsCount}-${this.lossesCount}`;
                 },
@@ -562,7 +569,7 @@
                         name: 'Journée ' + (this.matchWeeks.length + 1),
                         date: new Date().toISOString().split('T')[0],
                         matches: [
-                            { id: Date.now(), round: 'Match 1', opponent: this.allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', scorers: [] }
+                            { id: Date.now(), round: 'Match 1', opponent: this.allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] }
                         ]
                     });
                     this.selectedWeek = id;
@@ -582,7 +589,6 @@
                     let payload = {
                         teamName: this.teamName,
                         seasonName: this.seasonName,
-                        rank: this.rank,
                         textSize: this.textSize,
                         teamLogo: this.teamLogo,
                         adminPin: this.adminPin,
