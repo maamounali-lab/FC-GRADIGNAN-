@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" :class="textSize" x-data="plDashboard()">
+<html lang="fr" :class="isDarkMode ? 'dark ' + textSize : textSize" x-data="plDashboard()">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
+            darkMode: 'class', // Active le mode sombre via la classe 'dark'
             theme: {
                 extend: {
                     colors: {
@@ -26,12 +26,14 @@
 
         // ================= CONFIGURATION SUPABASE =================
         const SUPABASE_URL = 'https://zfyjurotivwagwuarbpy.supabase.co';       
+        
+        // ⚠️ REMETTEZ VOTRE VRAIE CLÉ COMPLÈTE ICI SUR UNE SEULE LIGNE :
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmeWp1cm90aXZ3YWd3dWFyYnB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzOTk1NDgsImV4cCI6MjEwNDk3NTU0OH0.wkRu1dqUttUgiVvJMptUSEOZ0ZaMwTjjiojlZi_UJzk'; 
         
         window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     </script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased transition-all duration-300" :class="textSizeClass">
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans antialiased transition-all duration-300">
 
     <!-- HEADER BANNER WITH LOGO -->
     <header class="bg-gradient-to-r from-plPurple-900 via-plPurple-800 to-indigo-900 shadow-xl pb-4">
@@ -39,7 +41,7 @@
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-4">
                     <!-- Team Logo / Photo -->
-                    <div class="w-14 h-14 rounded-2xl bg-slate-950 border-2 border-plCyan/40 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
+                    <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-950 border-2 border-plCyan/40 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
                         <img :src="teamLogo" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80'">
                     </div>
                     <div>
@@ -47,17 +49,24 @@
                         <h1 class="text-2xl font-black text-white mt-1 tracking-tight" x-text="teamName"></h1>
                     </div>
                 </div>
-                <!-- Admin Login Button -->
-                <button @click="checkAdminAccess()" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur border border-white/10 transition flex items-center gap-1.5">
-                    <span x-text="isAdmin ? '🔓 Mode Admin Actif' : '🔒 Connexion Admin'"></span>
-                </button>
+                
+                <div class="flex items-center gap-3">
+                    <!-- Toggle Dark/Light Mode -->
+                    <button @click="toggleTheme()" class="bg-white/10 hover:bg-white/20 text-white w-9 h-9 flex items-center justify-center rounded-full backdrop-blur border border-white/10 transition text-lg" title="Changer le thème">
+                        <span x-text="isDarkMode ? '☀️' : '🌙'"></span>
+                    </button>
+                    <!-- Admin Login Button -->
+                    <button @click="checkAdminAccess()" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur border border-white/10 transition flex items-center gap-1.5">
+                        <span x-text="isAdmin ? '🔓 Admin Actif' : '🔒 Admin'"></span>
+                    </button>
+                </div>
             </div>
 
             <!-- TABS NAVIGATION -->
-            <div class="flex gap-6 border-b border-white/10 text-sm font-bold">
-                <button @click="activeTab = 'matches'" :class="activeTab === 'matches' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-400 pb-3 hover:text-white'">Matchs</button>
-                <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-400 pb-3 hover:text-white'">Stats Équipe</button>
-                <button @click="activeTab = 'scorers'" :class="activeTab === 'scorers' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-400 pb-3 hover:text-white'">Buteurs</button>
+            <div class="flex gap-6 border-b border-white/20 text-sm font-bold">
+                <button @click="activeTab = 'matches'" :class="activeTab === 'matches' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-300 pb-3 hover:text-white'">Matchs</button>
+                <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-300 pb-3 hover:text-white'">Stats Équipe</button>
+                <button @click="activeTab = 'scorers'" :class="activeTab === 'scorers' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-300 pb-3 hover:text-white'">Buteurs</button>
             </div>
         </div>
     </header>
@@ -68,27 +77,27 @@
         <!-- ================= TAB 1: MATCHS ================= -->
         <div x-show="activeTab === 'matches'" class="space-y-6">
             
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white dark:bg-slate-900/90 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <span class="text-xs text-slate-400 font-semibold">Journée :</span>
-                    <select x-model="selectedWeek" class="bg-slate-950 border border-slate-700 text-white text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-plCyan">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Journée :</span>
+                    <select x-model="selectedWeek" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-plCyan">
                         <template x-for="week in matchWeeks" :key="week.id">
                             <option :value="week.id" x-text="week.name + ' (' + week.date + ')'"></option>
                         </template>
                     </select>
                 </div>
-                <div class="text-xs text-slate-400">
-                    📅 Date : <span class="font-bold text-plCyan" x-text="currentWeekData.date"></span>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                    📅 Date : <span class="font-bold text-plPurple-700 dark:text-plCyan" x-text="currentWeekData.date"></span>
                 </div>
             </div>
 
             <!-- Matches List for Selected Journée -->
             <div class="space-y-4">
                 <template x-for="match in currentWeekData.matches" :key="match.id">
-                    <div class="bg-slate-900 hover:bg-slate-850 transition border border-slate-800/80 rounded-2xl p-4 shadow-lg flex flex-col gap-3">
+                    <div class="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 transition border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow flex flex-col gap-3">
                         
-                        <div class="flex justify-between items-center text-[11px] text-slate-400 border-b border-slate-800 pb-2">
-                            <span class="font-bold text-plCyan uppercase" x-text="match.round"></span>
+                        <div class="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <span class="font-bold text-plPurple-700 dark:text-plCyan uppercase" x-text="match.round"></span>
                             <span x-text="match.timeAndPitch"></span>
                         </div>
 
@@ -97,32 +106,32 @@
                             <div class="col-span-3 text-left font-bold text-sm sm:text-base truncate pl-2" x-text="teamName"></div>
                             
                             <div class="col-span-1 flex justify-center">
-                                <div class="bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl font-black text-amber-400 text-sm tracking-widest shadow-inner">
+                                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-black text-amber-600 dark:text-amber-400 text-sm tracking-widest shadow-inner">
                                     <span x-text="match.scoreUs"></span>-<span x-text="match.scoreThem"></span>
                                 </div>
                             </div>
 
-                            <div class="col-span-3 text-right font-bold text-sm sm:text-base truncate pr-2 text-slate-300" x-text="match.opponent"></div>
+                            <div class="col-span-3 text-right font-bold text-sm sm:text-base truncate pr-2 text-slate-600 dark:text-slate-300" x-text="match.opponent"></div>
                         </div>
 
                         <!-- Status & Scorers -->
-                        <div class="flex justify-between items-center text-xs pt-2 border-t border-slate-800/60">
-                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-semibold" x-text="match.status"></span>
+                        <div class="flex justify-between items-center text-xs pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                            <span class="bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 border px-2.5 py-0.5 rounded-full font-semibold" x-text="match.status"></span>
                             
-                            <div class="text-slate-300 text-[11px]" x-show="match.scorers && match.scorers.length > 0">
+                            <div class="text-slate-600 dark:text-slate-300 text-[11px]" x-show="match.scorers && match.scorers.length > 0">
                                 ⚽ <span x-text="match.scorers.map(s => s.player + ' (' + s.goals + ')').join(', ')"></span>
                             </div>
                         </div>
 
                         <!-- Match Comment / Note -->
-                        <div x-show="match.comment && match.comment.trim() !== ''" class="mt-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 italic flex items-start gap-2">
+                        <div x-show="match.comment && match.comment.trim() !== ''" class="mt-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-600 dark:text-slate-300 italic flex items-start gap-2">
                             <span>💬</span>
                             <span x-text="match.comment"></span>
                         </div>
 
                     </div>
                 </template>
-                <div x-show="currentWeekData.matches.length === 0" class="text-center text-slate-500 py-8 bg-slate-900 rounded-2xl border border-slate-800">
+                <div x-show="currentWeekData.matches.length === 0" class="text-center text-slate-500 py-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     Aucun match programmé pour cette journée.
                 </div>
             </div>
@@ -133,49 +142,49 @@
         <div x-show="activeTab === 'stats'" class="space-y-6">
             
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400">Moyenne Buts / Match</span>
-                    <div class="text-3xl font-black text-amber-400 mt-1" x-text="avgGoalsPerMatch"></div>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Moyenne Buts / Match</span>
+                    <div class="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1" x-text="avgGoalsPerMatch"></div>
                     <span class="text-[10px] text-slate-500">buts marqués / match</span>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400">Points Totaux (Auto)</span>
-                    <div class="text-3xl font-black text-plCyan mt-1" x-text="calculatedPoints"></div>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Points Totaux (Auto)</span>
+                    <div class="text-3xl font-black text-plPurple-700 dark:text-plCyan mt-1" x-text="calculatedPoints"></div>
                     <span class="text-[10px] text-slate-500">3 pts (V) / 1 pt (N)</span>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400">Différence de Buts</span>
-                    <div class="text-3xl font-black text-blue-400 mt-1" x-text="goalDiff"></div>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Différence de Buts</span>
+                    <div class="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1" x-text="goalDiff"></div>
                     <span class="text-[10px] text-slate-500" x-text="goalsFor + ' pour / ' + goalsAgainst + ' contre'"></span>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400">Bilan (V-N-D)</span>
-                    <div class="text-2xl font-black text-white mt-2" x-text="record"></div>
-                    <span class="text-[10px] text-emerald-400" x-text="totalPlayed + ' matchs joués'"></span>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Bilan (V-N-D)</span>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" x-text="record"></div>
+                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400" x-text="totalPlayed + ' matchs joués'"></span>
                 </div>
             </div>
 
             <!-- VISUAL PERCENTAGE CHART -->
-            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
-                <h3 class="font-bold text-sm text-slate-200">📊 Graphique des Performances (Victoires, Nuls, Défaites)</h3>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">📊 Graphique des Performances</h3>
                 
                 <div class="space-y-3">
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-emerald-400 font-bold">Victoires</span>
-                            <span x-text="winPercent + '% (' + winsCount + ' matchs)'"></span>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-bold">Victoires</span>
+                            <span class="text-slate-600 dark:text-slate-300" x-text="winPercent + '% (' + winsCount + ' matchs)'"></span>
                         </div>
-                        <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                        <div class="w-full bg-slate-100 dark:bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800">
                             <div class="bg-emerald-500 h-full transition-all duration-500" :style="'width: ' + winPercent + '%'"></div>
                         </div>
                     </div>
 
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-amber-400 font-bold">Matchs Nuls</span>
-                            <span x-text="drawPercent + '% (' + drawsCount + ' matchs)'"></span>
+                            <span class="text-amber-500 dark:text-amber-400 font-bold">Matchs Nuls</span>
+                            <span class="text-slate-600 dark:text-slate-300" x-text="drawPercent + '% (' + drawsCount + ' matchs)'"></span>
                         </div>
-                        <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                        <div class="w-full bg-slate-100 dark:bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800">
                             <div class="bg-amber-500 h-full transition-all duration-500" :style="'width: ' + drawPercent + '%'"></div>
                         </div>
                     </div>
@@ -183,9 +192,9 @@
                     <div>
                         <div class="flex justify-between text-xs mb-1">
                             <span class="text-plPink font-bold">Défaites</span>
-                            <span x-text="lossPercent + '% (' + lossesCount + ' matchs)'"></span>
+                            <span class="text-slate-600 dark:text-slate-300" x-text="lossPercent + '% (' + lossesCount + ' matchs)'"></span>
                         </div>
-                        <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                        <div class="w-full bg-slate-100 dark:bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800">
                             <div class="bg-plPink h-full transition-all duration-500" :style="'width: ' + lossPercent + '%'"></div>
                         </div>
                     </div>
@@ -196,16 +205,16 @@
 
         <!-- ================= TAB 3: SCORERS LEADERBOARD ================= -->
         <div x-show="activeTab === 'scorers'" class="space-y-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <h3 class="font-bold text-sm text-slate-200 mb-4">⚽ Classement des Buteurs de l'Équipe</h3>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 mb-4">⚽ Classement des Buteurs</h3>
                 <div class="space-y-3">
                     <template x-for="(scorer, index) in totalScorers" :key="index">
-                        <div class="flex justify-between items-center bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">
                             <div class="flex items-center gap-3">
-                                <span class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-black text-amber-400" x-text="index + 1"></span>
-                                <span class="font-bold text-sm" x-text="scorer.name"></span>
+                                <span class="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-amber-600 dark:text-amber-400" x-text="index + 1"></span>
+                                <span class="font-bold text-sm text-slate-800 dark:text-white" x-text="scorer.name"></span>
                             </div>
-                            <span class="bg-plPurple-800 text-plCyan px-3 py-1 rounded-lg text-xs font-black border border-plCyan/20" x-text="scorer.goals + ' buts'"></span>
+                            <span class="bg-plPurple-100 text-plPurple-800 dark:bg-plPurple-800 dark:text-plCyan px-3 py-1 rounded-lg text-xs font-black border border-plPurple-200 dark:border-plCyan/20" x-text="scorer.goals + ' buts'"></span>
                         </div>
                     </template>
                 </div>
@@ -216,72 +225,72 @@
 
 
     <!-- ================= ADMIN CONTROL PANEL MODAL ================= -->
-    <div x-show="isAdminModalOpen" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 space-y-6 shadow-2xl my-8">
+    <div x-show="isAdminModalOpen" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full p-6 space-y-6 shadow-2xl my-8">
             
-            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">⚙️ Panneau d'Administration (Cloud Synced)</h2>
-                <button @click="isAdminModalOpen = false" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">⚙️ Panneau d'Administration</h2>
+                <button @click="isAdminModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold text-xl">&times;</button>
             </div>
 
             <div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
                 
-                <!-- General Info, Season, PIN Code & Photo Upload -->
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- General Info -->
+                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">Nom de l'équipe</label>
-                        <input type="text" x-model="teamName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold">
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Nom de l'équipe</label>
+                        <input type="text" x-model="teamName" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-bold">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">Saison en cours</label>
-                        <input type="text" x-model="seasonName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-plCyan font-bold">
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Saison en cours</label>
+                        <input type="text" x-model="seasonName" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-plPurple-700 dark:text-plCyan font-bold">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">Nouveau Code PIN (Min. 6 chiffres)</label>
-                        <input type="password" x-model="newAdminPin" placeholder="Laisser vide pour garder l'actuel" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Nouveau Code PIN</label>
+                        <input type="password" x-model="newAdminPin" placeholder="Laisser vide pour garder l'actuel" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">Taille du Texte</label>
-                        <select x-model="textSize" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold">
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Taille du Texte</label>
+                        <select x-model="textSize" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-bold">
                             <option value="text-sm">Normal (Compact)</option>
                             <option value="text-base">Moyen (Standard)</option>
                             <option value="text-lg">Grand (Lisible)</option>
                         </select>
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-xs text-slate-400 mb-1">Télécharger le logo / photo de l'équipe</label>
-                        <input type="file" accept="image/*" @change="uploadLogo($event)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 cursor-pointer">
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Télécharger le logo / photo</label>
+                        <input type="file" accept="image/*" @change="uploadLogo($event)" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
                     </div>
                 </div>
 
                 <!-- Squad Management -->
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
-                    <h3 class="text-xs font-bold text-plCyan">👥 Joueurs de l'équipe (Buteurs)</h3>
+                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                    <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">👥 Joueurs (Buteurs)</h3>
                     <div class="flex gap-2">
-                        <input type="text" x-model="newPlayerName" placeholder="Nom du joueur" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <input type="text" x-model="newPlayerName" placeholder="Nom du joueur" class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
                         <button @click="addPlayer()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-4 py-2 rounded-xl text-xs font-bold">Ajouter</button>
                     </div>
                     <div class="flex flex-wrap gap-2 pt-2">
                         <template x-for="(player, idx) in squad" :key="idx">
-                            <div class="bg-slate-900 border border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
-                                <span x-text="player"></span>
+                            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
+                                <span class="text-slate-800 dark:text-white" x-text="player"></span>
                                 <button @click="squad.splice(idx, 1)" class="text-plPink font-bold">&times;</button>
                             </div>
                         </template>
                     </div>
                 </div>
 
-                <!-- Opponents Pool Management (14 Teams) -->
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
-                    <h3 class="text-xs font-bold text-plCyan">🛡️ Gestion des Équipes Adverses (Pool de 14 équipes)</h3>
+                <!-- Opponents Pool Management -->
+                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                    <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">🛡️ Équipes Adverses</h3>
                     <div class="flex gap-2">
-                        <input type="text" x-model="newOpponentName" placeholder="Nom de l'équipe adverse" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-                        <button @click="addOpponent()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-4 py-2 rounded-xl text-xs font-bold">Ajouter l'équipe</button>
+                        <input type="text" x-model="newOpponentName" placeholder="Nom de l'équipe adverse" class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
+                        <button @click="addOpponent()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-4 py-2 rounded-xl text-xs font-bold">Ajouter</button>
                     </div>
                     <div class="flex flex-wrap gap-2 pt-2">
                         <template x-for="(team, tIdx) in allOpponents" :key="tIdx">
-                            <div class="bg-slate-900 border border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
-                                <span x-text="team"></span>
+                            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
+                                <span class="text-slate-800 dark:text-white" x-text="team"></span>
                                 <button @click="allOpponents.splice(tIdx, 1)" class="text-plPink font-bold">&times;</button>
                             </div>
                         </template>
@@ -291,74 +300,73 @@
                 <!-- Matchweeks Editor -->
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-plCyan">📅 Gestion des Journées (Nombre de matchs libre)</h3>
-                        <button @click="addMatchWeek()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ Ajouter une Journée</button>
+                        <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">📅 Gestion des Matchs</h3>
+                        <button @click="addMatchWeek()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ Ajouter Journée</button>
                     </div>
 
                     <template x-for="(week, wIdx) in matchWeeks" :key="week.id">
-                        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-4">
-                            <div class="flex flex-col sm:flex-row justify-between items-center gap-2 border-b border-slate-800 pb-2">
-                                <input type="text" x-model="week.name" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-bold text-white w-full sm:w-32">
+                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                            <div class="flex flex-col sm:flex-row justify-between items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <input type="text" x-model="week.name" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs font-bold text-slate-900 dark:text-white w-full sm:w-32">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-slate-400">Date :</span>
-                                    <input type="date" x-model="week.date" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white cursor-pointer">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">Date :</span>
+                                    <input type="date" x-model="week.date" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs text-slate-900 dark:text-white cursor-pointer">
                                 </div>
                                 <button @click="matchWeeks.splice(wIdx, 1)" class="text-plPink text-xs font-bold">Supprimer la Journée</button>
                             </div>
 
                             <div class="space-y-3">
                                 <template x-for="(match, mIdx) in week.matches" :key="match.id">
-                                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
-                                        <div class="flex justify-between items-center text-[11px] text-slate-300">
-                                            <span class="font-bold text-plCyan" x-text="match.round"></span>
+                                    <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+                                        <div class="flex justify-between items-center text-[11px] text-slate-600 dark:text-slate-300">
+                                            <span class="font-bold text-plPurple-700 dark:text-plCyan" x-text="match.round"></span>
                                             <div class="flex items-center gap-3">
-                                                <input type="text" x-model="match.status" class="bg-slate-950 border border-slate-700 rounded px-2 py-0.5 text-xs text-emerald-400 w-28 text-center">
+                                                <input type="text" x-model="match.status" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-0.5 text-xs text-emerald-600 dark:text-emerald-400 w-28 text-center">
                                                 <button @click="week.matches.splice(mIdx, 1)" class="text-plPink text-xs font-bold">🗑️ Supprimer</button>
                                             </div>
                                         </div>
 
                                         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
                                             <div>
-                                                <label class="block text-[10px] text-slate-400">Équipe adverse</label>
-                                                <select x-model="match.opponent" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                                                <label class="block text-[10px] text-slate-500 dark:text-slate-400">Équipe adverse</label>
+                                                <select x-model="match.opponent" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white">
                                                     <template x-for="team in allOpponents">
                                                         <option :value="team" x-text="team"></option>
                                                     </template>
                                                 </select>
                                             </div>
                                             <div>
-                                                <label class="block text-[10px] text-slate-400">Heure & Terrain</label>
-                                                <input type="text" x-model="match.timeAndPitch" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                                                <label class="block text-[10px] text-slate-500 dark:text-slate-400">Heure & Terrain</label>
+                                                <input type="text" x-model="match.timeAndPitch" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white">
                                             </div>
                                             <div>
-                                                <label class="block text-[10px] text-slate-400">Buts Nous</label>
-                                                <input type="number" x-model.number="match.scoreUs" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-amber-400 font-bold">
+                                                <label class="block text-[10px] text-slate-500 dark:text-slate-400">Buts Nous</label>
+                                                <input type="number" x-model.number="match.scoreUs" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-amber-600 dark:text-amber-400 font-bold">
                                             </div>
                                             <div>
-                                                <label class="block text-[10px] text-slate-400">Buts Adversaire</label>
-                                                <input type="number" x-model.number="match.scoreThem" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-bold">
+                                                <label class="block text-[10px] text-slate-500 dark:text-slate-400">Buts Adv.</label>
+                                                <input type="number" x-model.number="match.scoreThem" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white font-bold">
                                             </div>
                                         </div>
 
-                                        <!-- Comment Input in Admin -->
                                         <div>
-                                            <label class="block text-[10px] text-slate-400">Commentaire libre (Optionnel)</label>
-                                            <input type="text" x-model="match.comment" placeholder="Ex: Terrain glissant, carton rouge, résumé..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200">
+                                            <label class="block text-[10px] text-slate-500 dark:text-slate-400">Commentaire libre</label>
+                                            <input type="text" x-model="match.comment" placeholder="Ex: Résumé..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-slate-200">
                                         </div>
 
-                                        <div class="pt-2 border-t border-slate-800 space-y-2">
+                                        <div class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
                                             <div class="flex justify-between items-center text-[11px]">
-                                                <span class="text-plCyan">Buteurs de ce match :</span>
-                                                <button @click="match.scorers.push({player: squad[0], goals: 1})" class="bg-slate-800 text-slate-200 px-2 py-0.5 rounded text-[10px]">+ Ajouter</button>
+                                                <span class="text-plPurple-700 dark:text-plCyan">Buteurs du match :</span>
+                                                <button @click="match.scorers.push({player: squad[0], goals: 1})" class="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-2 py-0.5 rounded text-[10px]">+ Ajouter</button>
                                             </div>
                                             <template x-for="(scorer, sIdx) in match.scorers" :key="sIdx">
                                                 <div class="flex gap-2 items-center">
-                                                    <select x-model="scorer.player" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
+                                                    <select x-model="scorer.player" class="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs text-slate-900 dark:text-white">
                                                         <template x-for="p in squad">
                                                             <option :value="p" x-text="p"></option>
                                                         </template>
                                                     </select>
-                                                    <input type="number" x-model.number="scorer.goals" min="1" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-amber-400 font-bold text-center" placeholder="Buts">
+                                                    <input type="number" x-model.number="scorer.goals" min="1" class="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs text-amber-600 dark:text-amber-400 font-bold text-center" placeholder="Buts">
                                                     <button @click="match.scorers.splice(sIdx, 1)" class="text-plPink font-bold">✕</button>
                                                 </div>
                                             </template>
@@ -367,8 +375,8 @@
                                     </div>
                                 </template>
 
-                                <button @click="week.matches.push({id: Date.now(), round: 'Match ' + (week.matches.length + 1), opponent: allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: []})" class="w-full bg-slate-900 hover:bg-slate-850 text-plCyan border border-plCyan/30 py-2 rounded-xl text-xs font-bold transition">
-                                    + Ajouter un match à cette journée
+                                <button @click="week.matches.push({id: Date.now(), round: 'Match ' + (week.matches.length + 1), opponent: allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: []})" class="w-full bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 text-plPurple-700 dark:text-plCyan border border-plPurple-200 dark:border-plCyan/30 py-2 rounded-xl text-xs font-bold transition">
+                                    + Ajouter un match
                                 </button>
                             </div>
                         </div>
@@ -377,18 +385,21 @@
 
             </div>
 
-            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                <button @click="isAdminModalOpen = false" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold">Fermer</button>
-                <button @click="saveData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-xs font-bold shadow-lg">Enregistrer & Sync Cloud</button>
+            <div class="flex justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button @click="exportToExcel()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">📥 Exporter vers Excel</button>
+                <div class="flex gap-2">
+                    <button @click="isAdminModalOpen = false" class="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold">Fermer</button>
+                    <button @click="saveData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-xs font-bold shadow-lg">Enregistrer & Sync Cloud</button>
+                </div>
             </div>
         </div>
     </div>
 
 
-    <!-- JAVASCRIPT LOGIC WITH SUPABASE SYNC -->
     <script>
         function plDashboard() {
             return {
+                isDarkMode: true, // Thème par défaut
                 activeTab: 'matches',
                 isAdmin: false,
                 isAdminModalOpen: false,
@@ -401,28 +412,17 @@
                 newAdminPin: '',
 
                 squad: ['Miloud B.', 'Mamoun B.', 'Florent B.', 'Fred B.'],
-                allOpponents: [
-                    'St Bruno', 'Eysines', 'Stade Bordelais', 'Pierroton', 
-                    'BEC A', 'Blanquefort', 'Chantecler', 'AS Magonty A', 'Municipaux Villenave', 
-                    'Jeunesse Villenavaise', 'Stade Marennes', 'US Bouscat', 'CA Peyberland'
-                ],
+                allOpponents: ['St Bruno', 'Eysines', 'Stade Bordelais', 'Pierroton', 'BEC A', 'Blanquefort', 'Chantecler', 'AS Magonty A', 'Municipaux Villenave', 'Jeunesse Villenavaise', 'Stade Marennes', 'US Bouscat', 'CA Peyberland'],
 
                 selectedWeek: 'week_1',
-                matchWeeks: [
-                    {
-                        id: 'week_1',
-                        name: 'Journée 1',
-                        date: '2026-09-12',
-                        matches: [
-                            { id: 1, round: 'Match 1', opponent: 'Eysines', timeAndPitch: '10:00 · Eysines', scoreUs: 3, scoreThem: 1, status: 'Terminé', comment: '', scorers: [{player: 'Miloud B.', goals: 2}, {player: 'Mamoun B.', goals: 1}] },
-                            { id: 2, round: 'Match 2', opponent: 'St Bruno', timeAndPitch: '11:00 · Terrain 2', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] },
-                            { id: 3, round: 'Match 3', opponent: 'Stade Bordelais', timeAndPitch: '14:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] }
-                        ]
-                    }
-                ],
+                matchWeeks: [{ id: 'week_1', name: 'Journée 1', date: '2026-09-12', matches: [] }],
 
-                // Load data from Supabase on startup
                 async init() {
+                    // Charger la préférence de thème locale
+                    if (localStorage.getItem('theme') === 'light') {
+                        this.isDarkMode = false;
+                    }
+                    
                     try {
                         let { data, error } = await window._supabase.from('app_data').select('state').eq('id', 1).single();
                         if (data && data.state && Object.keys(data.state).length > 0) {
@@ -444,84 +444,59 @@
                     }
                 },
 
-                get currentWeekData() {
-                    return this.matchWeeks.find(w => w.id === this.selectedWeek) || this.matchWeeks[0];
+                toggleTheme() {
+                    this.isDarkMode = !this.isDarkMode;
+                    localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
                 },
 
-                get totalPlayed() {
-                    let count = 0;
-                    this.matchWeeks.forEach(w => count += w.matches.length);
-                    return count;
-                },
-                get winsCount() {
-                    let c = 0;
-                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs > m.scoreThem) c++; }));
-                    return c;
-                },
-                get drawsCount() {
-                    let c = 0;
-                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs === m.scoreThem) c++; }));
-                    return c;
-                },
-                get lossesCount() {
-                    let c = 0;
-                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs < m.scoreThem) c++; }));
-                    return c;
-                },
-                
-                get calculatedPoints() {
-                    return (this.winsCount * 3) + (this.drawsCount * 1);
+                exportToExcel() {
+                    let csv = "Journée,Date,Adversaire,Statut,Buts FC Gradignan,Buts Adversaire,Buteurs,Commentaire\n";
+                    this.matchWeeks.forEach(week => {
+                        week.matches.forEach(match => {
+                            let buteurs = match.scorers.map(s => s.player + ' (' + s.goals + ')').join(' & ');
+                            let row = [
+                                `"${week.name}"`, `"${week.date}"`, `"${match.opponent}"`, `"${match.status}"`,
+                                match.scoreUs, match.scoreThem,
+                                `"${buteurs}"`, `"${match.comment || ''}"`
+                            ].join(",");
+                            csv += row + "\n";
+                        });
+                    });
+
+                    // Créer et télécharger le fichier CSV
+                    const blob = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "FC_Gradignan_Saison.csv";
+                    link.click();
                 },
 
-                get winPercent() {
-                    if (this.totalPlayed === 0) return 0;
-                    return Math.round((this.winsCount / this.totalPlayed) * 100);
-                },
-                get drawPercent() {
-                    if (this.totalPlayed === 0) return 0;
-                    return Math.round((this.drawsCount / this.totalPlayed) * 100);
-                },
-                get lossPercent() {
-                    if (this.totalPlayed === 0) return 0;
-                    return Math.round((this.lossesCount / this.totalPlayed) * 100);
-                },
-                get goalsFor() {
-                    let sum = 0;
-                    this.matchWeeks.forEach(w => w.matches.forEach(m => sum += (parseInt(m.scoreUs) || 0)));
-                    return sum;
-                },
-                get goalsAgainst() {
-                    let sum = 0;
-                    this.matchWeeks.forEach(w => w.matches.forEach(m => sum += (parseInt(m.scoreThem) || 0)));
-                    return sum;
-                },
-                get goalDiff() {
-                    let diff = this.goalsFor - this.goalsAgainst;
-                    return (diff > 0 ? '+' : '') + diff;
-                },
-                get avgGoalsPerMatch() {
-                    if (this.totalPlayed === 0) return '0.0';
-                    return (this.goalsFor / this.totalPlayed).toFixed(1);
-                },
-                get record() {
-                    return `${this.winsCount}-${this.drawsCount}-${this.lossesCount}`;
-                },
+                get currentWeekData() { return this.matchWeeks.find(w => w.id === this.selectedWeek) || this.matchWeeks[0]; },
+                get totalPlayed() { let count = 0; this.matchWeeks.forEach(w => count += w.matches.length); return count; },
+                get winsCount() { let c = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs > m.scoreThem) c++; })); return c; },
+                get drawsCount() { let c = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs === m.scoreThem) c++; })); return c; },
+                get lossesCount() { let c = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs < m.scoreThem) c++; })); return c; },
+                get calculatedPoints() { return (this.winsCount * 3) + (this.drawsCount * 1); },
+                get winPercent() { if (this.totalPlayed === 0) return 0; return Math.round((this.winsCount / this.totalPlayed) * 100); },
+                get drawPercent() { if (this.totalPlayed === 0) return 0; return Math.round((this.drawsCount / this.totalPlayed) * 100); },
+                get lossPercent() { if (this.totalPlayed === 0) return 0; return Math.round((this.lossesCount / this.totalPlayed) * 100); },
+                get goalsFor() { let sum = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => sum += (parseInt(m.scoreUs) || 0))); return sum; },
+                get goalsAgainst() { let sum = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => sum += (parseInt(m.scoreThem) || 0))); return sum; },
+                get goalDiff() { let diff = this.goalsFor - this.goalsAgainst; return (diff > 0 ? '+' : '') + diff; },
+                get avgGoalsPerMatch() { if (this.totalPlayed === 0) return '0.0'; return (this.goalsFor / this.totalPlayed).toFixed(1); },
+                get record() { return `${this.winsCount}-${this.drawsCount}-${this.lossesCount}`; },
 
                 get totalScorers() {
                     let counts = {};
                     this.matchWeeks.forEach(w => {
                         w.matches.forEach(m => {
                             if (m.scorers) {
-                                m.scorers.forEach(s => {
-                                    counts[s.player] = (counts[s.player] || 0) + parseInt(s.goals || 0);
-                                });
+                                m.scorers.forEach(s => { counts[s.player] = (counts[s.player] || 0) + parseInt(s.goals || 0); });
                             }
                         });
                     });
                     let result = [];
-                    for (let p in counts) {
-                        result.push({ name: p, goals: counts[p] });
-                    }
+                    for (let p in counts) { result.push({ name: p, goals: counts[p] }); }
                     return result.sort((a, b) => b.goals - a.goals);
                 },
 
@@ -555,9 +530,7 @@
                     let file = event.target.files[0];
                     if (file) {
                         let reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.teamLogo = e.target.result;
-                        };
+                        reader.onload = (e) => { this.teamLogo = e.target.result; };
                         reader.readAsDataURL(file);
                     }
                 },
@@ -565,17 +538,12 @@
                 addMatchWeek() {
                     let id = 'week_' + Date.now();
                     this.matchWeeks.push({
-                        id: id,
-                        name: 'Journée ' + (this.matchWeeks.length + 1),
-                        date: new Date().toISOString().split('T')[0],
-                        matches: [
-                            { id: Date.now(), round: 'Match 1', opponent: this.allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] }
-                        ]
+                        id: id, name: 'Journée ' + (this.matchWeeks.length + 1), date: new Date().toISOString().split('T')[0],
+                        matches: [{ id: Date.now(), round: 'Match 1', opponent: this.allOpponents[0], timeAndPitch: '10:00 · Terrain', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] }]
                     });
                     this.selectedWeek = id;
                 },
 
-                // Save data to Supabase Cloud Database
                 async saveData() {
                     if (this.newAdminPin.trim() !== '') {
                         if (this.newAdminPin.trim().length < 6) {
@@ -587,20 +555,14 @@
                     }
 
                     let payload = {
-                        teamName: this.teamName,
-                        seasonName: this.seasonName,
-                        textSize: this.textSize,
-                        teamLogo: this.teamLogo,
-                        adminPin: this.adminPin,
-                        squad: this.squad,
-                        allOpponents: this.allOpponents,
-                        matchWeeks: this.matchWeeks
+                        teamName: this.teamName, seasonName: this.seasonName, textSize: this.textSize,
+                        teamLogo: this.teamLogo, adminPin: this.adminPin, squad: this.squad,
+                        allOpponents: this.allOpponents, matchWeeks: this.matchWeeks
                     };
 
                     try {
                         let { error } = await window._supabase.from('app_data').upsert({ id: 1, state: payload });
                         if (error) throw error;
-                        
                         this.isAdminModalOpen = false;
                         alert('Données enregistrées et synchronisées en direct dans le Cloud avec succès !');
                     } catch (err) {
