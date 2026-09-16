@@ -174,7 +174,7 @@
 
             <!-- VISUAL PERCENTAGE CHART -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
-                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">📊 Graphique des Performances</h3>
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">📊 Graphique des Performances (Matchs Terminés)</h3>
                 
                 <div class="space-y-3">
                     <div>
@@ -330,14 +330,12 @@
                                             <span class="font-bold text-plPurple-700 dark:text-plCyan" x-text="match.round"></span>
                                             
                                             <div class="flex items-center gap-3">
-                                                <!-- LE NOUVEAU MENU DÉROULANT DU STATUT EST ICI -->
                                                 <select x-model="match.status" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 w-28 text-center cursor-pointer">
                                                     <option value="À venir">À venir</option>
                                                     <option value="En cours">En cours</option>
                                                     <option value="Terminé">Terminé</option>
                                                     <option value="Reporté">Reporté</option>
                                                 </select>
-                                                
                                                 <button @click="week.matches.splice(mIdx, 1)" class="text-plPink text-xs font-bold">🗑️ Supprimer</button>
                                             </div>
                                         </div>
@@ -486,16 +484,42 @@
                 },
 
                 get currentWeekData() { return this.matchWeeks.find(w => w.id === this.selectedWeek) || this.matchWeeks[0]; },
-                get totalPlayed() { let count = 0; this.matchWeeks.forEach(w => count += w.matches.length); return count; },
-                get winsCount() { let c = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs > m.scoreThem) c++; })); return c; },
-                get drawsCount() { let c = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs === m.scoreThem) c++; })); return c; },
-                get lossesCount() { let c = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.scoreUs < m.scoreThem) c++; })); return c; },
+                
+                // ======== LOGIQUE CORRIGÉE : STATS UNIQUEMENT POUR MATCHS TERMINÉS ========
+                get totalPlayed() { 
+                    let count = 0; 
+                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.status === 'Terminé') count++; })); 
+                    return count; 
+                },
+                get winsCount() { 
+                    let c = 0; 
+                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.status === 'Terminé' && m.scoreUs > m.scoreThem) c++; })); 
+                    return c; 
+                },
+                get drawsCount() { 
+                    let c = 0; 
+                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.status === 'Terminé' && m.scoreUs === m.scoreThem) c++; })); 
+                    return c; 
+                },
+                get lossesCount() { 
+                    let c = 0; 
+                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.status === 'Terminé' && m.scoreUs < m.scoreThem) c++; })); 
+                    return c; 
+                },
                 get calculatedPoints() { return (this.winsCount * 3) + (this.drawsCount * 1); },
                 get winPercent() { if (this.totalPlayed === 0) return 0; return Math.round((this.winsCount / this.totalPlayed) * 100); },
                 get drawPercent() { if (this.totalPlayed === 0) return 0; return Math.round((this.drawsCount / this.totalPlayed) * 100); },
                 get lossPercent() { if (this.totalPlayed === 0) return 0; return Math.round((this.lossesCount / this.totalPlayed) * 100); },
-                get goalsFor() { let sum = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => sum += (parseInt(m.scoreUs) || 0))); return sum; },
-                get goalsAgainst() { let sum = 0; this.matchWeeks.forEach(w => w.matches.forEach(m => sum += (parseInt(m.scoreThem) || 0))); return sum; },
+                get goalsFor() { 
+                    let sum = 0; 
+                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.status === 'Terminé') sum += (parseInt(m.scoreUs) || 0); })); 
+                    return sum; 
+                },
+                get goalsAgainst() { 
+                    let sum = 0; 
+                    this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.status === 'Terminé') sum += (parseInt(m.scoreThem) || 0); })); 
+                    return sum; 
+                },
                 get goalDiff() { let diff = this.goalsFor - this.goalsAgainst; return (diff > 0 ? '+' : '') + diff; },
                 get avgGoalsPerMatch() { if (this.totalPlayed === 0) return '0.0'; return (this.goalsFor / this.totalPlayed).toFixed(1); },
                 get record() { return `${this.winsCount}-${this.drawsCount}-${this.lossesCount}`; },
@@ -504,7 +528,7 @@
                     let counts = {};
                     this.matchWeeks.forEach(w => {
                         w.matches.forEach(m => {
-                            if (m.scorers) {
+                            if (m.status === 'Terminé' && m.scorers) {
                                 m.scorers.forEach(s => { counts[s.player] = (counts[s.player] || 0) + parseInt(s.goals || 0); });
                             }
                         });
@@ -513,6 +537,7 @@
                     for (let p in counts) { result.push({ name: p, goals: counts[p] }); }
                     return result.sort((a, b) => b.goals - a.goals);
                 },
+                // =========================================================================
 
                 checkAdminAccess() {
                     let pin = prompt("Entrez le code PIN administrateur (Défaut: 123456) :");
