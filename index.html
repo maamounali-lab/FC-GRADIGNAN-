@@ -106,8 +106,11 @@
                             <div class="col-span-3 text-left font-bold text-sm sm:text-base truncate pl-2" x-text="teamName"></div>
                             
                             <div class="col-span-1 flex justify-center">
-                                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-black text-amber-600 dark:text-amber-400 text-sm tracking-widest shadow-inner">
-                                    <span x-text="match.scoreUs"></span>-<span x-text="match.scoreThem"></span>
+                                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-black text-amber-600 dark:text-amber-400 text-sm tracking-widest shadow-inner flex items-center justify-center min-w-[60px]">
+                                    <!-- AFFICHE - SI LE MATCH EST A VENIR OU REPORTE, SINON LE SCORE -->
+                                    <span x-text="['À venir', 'Reporté'].includes(match.status) ? '-' : match.scoreUs"></span>
+                                    <span class="mx-1">-</span>
+                                    <span x-text="['À venir', 'Reporté'].includes(match.status) ? '-' : match.scoreThem"></span>
                                 </div>
                             </div>
 
@@ -115,7 +118,7 @@
                         </div>
 
                         <!-- Status & Scorers -->
-                        <div class="flex justify-between items-center text-xs pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-3 border-t border-slate-100 dark:border-slate-800/60 gap-2">
                             <!-- BADGE STATUT DYNAMIQUE -->
                             <span class="border px-2.5 py-0.5 rounded-full font-semibold text-[10px]" 
                                   :class="{
@@ -126,7 +129,8 @@
                                   }"
                                   x-text="match.status"></span>
                             
-                            <div class="text-slate-600 dark:text-slate-300 text-[11px]" x-show="match.scorers && match.scorers.length > 0">
+                            <!-- BUTEURS : PLUS GROS ET PLUS VISIBLES -->
+                            <div class="text-slate-800 dark:text-white text-xs font-bold" x-show="match.scorers && match.scorers.length > 0">
                                 ⚽ <span x-text="match.scorers.map(s => s.player + ' (' + s.goals + ')').join(', ')"></span>
                             </div>
                         </div>
@@ -156,7 +160,8 @@
                     <span class="text-[10px] text-slate-500">buts marqués / match</span>
                 </div>
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Points Totaux (Auto)</span>
+                    <!-- LE (AUTO) A ETE RETIRÉ ICI -->
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Points Totaux</span>
                     <div class="text-3xl font-black text-plPurple-700 dark:text-plCyan mt-1" x-text="calculatedPoints"></div>
                     <span class="text-[10px] text-slate-500">3 pts (V) / 1 pt (N)</span>
                 </div>
@@ -485,7 +490,6 @@
 
                 get currentWeekData() { return this.matchWeeks.find(w => w.id === this.selectedWeek) || this.matchWeeks[0]; },
                 
-                // ======== LOGIQUE CORRIGÉE : STATS UNIQUEMENT POUR MATCHS TERMINÉS ========
                 get totalPlayed() { 
                     let count = 0; 
                     this.matchWeeks.forEach(w => w.matches.forEach(m => { if (m.status === 'Terminé') count++; })); 
@@ -537,7 +541,6 @@
                     for (let p in counts) { result.push({ name: p, goals: counts[p] }); }
                     return result.sort((a, b) => b.goals - a.goals);
                 },
-                // =========================================================================
 
                 checkAdminAccess() {
                     let pin = prompt("Entrez le code PIN administrateur (Défaut: 123456) :");
