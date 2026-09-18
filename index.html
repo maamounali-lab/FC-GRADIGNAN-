@@ -104,15 +104,17 @@
                         <!-- Score Display -->
                         <div class="grid grid-cols-7 items-center py-2">
                             
-                            <!-- AFFICHAGE DU NOM DE L'EQUIPE + PHOTO (CLIQUABLE SI PHOTO PRESENTE) -->
-                            <div class="col-span-3 text-left font-bold text-sm sm:text-base truncate pl-2">
+                            <!-- AFFICHAGE DU NOM DE L'EQUIPE + PHOTO - CORRIGÉ POUR MOBILE -->
+                            <div class="col-span-3 text-left font-bold text-sm sm:text-base pl-2 min-w-0">
                                 <template x-if="match.teamPhoto">
-                                    <button @click="openPhotoModal(match.teamPhoto)" class="text-plPurple-700 dark:text-plCyan hover:underline flex items-center gap-1.5 transition-all" title="Voir la photo de l'équipe">
-                                        <span x-text="teamName" class="truncate"></span> <span class="text-lg">📸</span>
+                                    <button @click="openPhotoModal(match.teamPhoto)" class="text-plPurple-700 dark:text-plCyan hover:underline flex items-center w-full" title="Voir la photo de l'équipe">
+                                        <span x-text="teamName" class="truncate"></span> 
+                                        <!-- shrink-0 empêche la photo de s'écraser ou de déborder sur mobile -->
+                                        <span class="text-base sm:text-lg shrink-0 ml-1">📸</span>
                                     </button>
                                 </template>
                                 <template x-if="!match.teamPhoto">
-                                    <span x-text="teamName"></span>
+                                    <span x-text="teamName" class="block truncate"></span>
                                 </template>
                             </div>
                             
