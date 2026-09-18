@@ -101,17 +101,17 @@
                             <span x-text="match.timeAndPitch"></span>
                         </div>
 
-                        <!-- Score Display avec bouton photo au-dessus du nom -->
+                        <!-- Score Display avec bouton photo EN DESSOUS du nom -->
                         <div class="grid grid-cols-7 items-center py-1 gap-1">
                             
-                            <!-- ÉQUIPE US + BOUTON PHOTO AU-DESSUS -->
+                            <!-- ÉQUIPE US + BOUTON PHOTO EN DESSOUS -->
                             <div class="col-span-3 text-left font-bold text-xs sm:text-base min-w-0 flex flex-col items-start justify-center">
+                                <span x-text="teamName" class="block truncate w-full text-slate-900 dark:text-white"></span>
                                 <template x-if="match.teamPhoto">
-                                    <button @click="openPhotoModal(match.teamPhoto)" class="bg-plPurple-100 dark:bg-plPurple-900/60 border border-plPurple-200 dark:border-plCyan/30 text-plPurple-800 dark:text-plCyan px-2 py-0.5 rounded-md text-[10px] font-bold mb-1 flex items-center gap-1 hover:scale-105 transition-transform" title="Voir la photo de l'équipe">
-                                        <span>📸 Photo Équipe</span>
+                                    <button @click="openPhotoModal(match.teamPhoto)" class="mt-1 bg-plPurple-100 dark:bg-plPurple-900/60 border border-plPurple-200 dark:border-plCyan/30 text-plPurple-800 dark:text-plCyan px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold flex items-center gap-1 hover:scale-105 transition-transform" title="Voir la photo de l'équipe">
+                                        <span>📸 Photo</span>
                                     </button>
                                 </template>
-                                <span x-text="teamName" class="block truncate w-full text-slate-900 dark:text-white"></span>
                             </div>
                             
                             <!-- SCORE CENTRAL -->
@@ -123,8 +123,14 @@
                                 </div>
                             </div>
 
-                            <!-- ÉQUIPE ADVERSE -->
-                            <div class="col-span-3 text-right font-bold text-xs sm:text-base truncate pl-1 text-slate-600 dark:text-slate-300" x-text="match.opponent"></div>
+                            <!-- ÉQUIPE ADVERSE AVEC ESPACEUR INVISIBLE (Pour garder l'alignement parfait) -->
+                            <div class="col-span-3 text-right font-bold text-xs sm:text-base min-w-0 flex flex-col items-end justify-center">
+                                <span x-text="match.opponent" class="block truncate w-full text-slate-600 dark:text-slate-300"></span>
+                                <template x-if="match.teamPhoto">
+                                    <!-- Cale invisible de la même taille que le bouton photo pour garder les noms sur la même ligne -->
+                                    <div class="mt-1 h-[22px] sm:h-[24px] invisible"></div>
+                                </template>
+                            </div>
                         </div>
 
                         <!-- Status & Scorers -->
