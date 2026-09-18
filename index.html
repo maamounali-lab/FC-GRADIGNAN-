@@ -103,11 +103,21 @@
 
                         <!-- Score Display -->
                         <div class="grid grid-cols-7 items-center py-2">
-                            <div class="col-span-3 text-left font-bold text-sm sm:text-base truncate pl-2" x-text="teamName"></div>
+                            
+                            <!-- AFFICHAGE DU NOM DE L'EQUIPE + PHOTO (CLIQUABLE SI PHOTO PRESENTE) -->
+                            <div class="col-span-3 text-left font-bold text-sm sm:text-base truncate pl-2">
+                                <template x-if="match.teamPhoto">
+                                    <button @click="openPhotoModal(match.teamPhoto)" class="text-plPurple-700 dark:text-plCyan hover:underline flex items-center gap-1.5 transition-all" title="Voir la photo de l'équipe">
+                                        <span x-text="teamName" class="truncate"></span> <span class="text-lg">📸</span>
+                                    </button>
+                                </template>
+                                <template x-if="!match.teamPhoto">
+                                    <span x-text="teamName"></span>
+                                </template>
+                            </div>
                             
                             <div class="col-span-1 flex justify-center">
                                 <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-black text-amber-600 dark:text-amber-400 text-sm tracking-widest shadow-inner flex items-center justify-center min-w-[60px]">
-                                    <!-- AFFICHE - SI LE MATCH EST A VENIR OU REPORTE, SINON LE SCORE -->
                                     <span x-text="['À venir', 'Reporté'].includes(match.status) ? '-' : match.scoreUs"></span>
                                     <span class="mx-1">-</span>
                                     <span x-text="['À venir', 'Reporté'].includes(match.status) ? '-' : match.scoreThem"></span>
@@ -119,7 +129,6 @@
 
                         <!-- Status & Scorers -->
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-3 border-t border-slate-100 dark:border-slate-800/60 gap-2">
-                            <!-- BADGE STATUT DYNAMIQUE -->
                             <span class="border px-2.5 py-0.5 rounded-full font-semibold text-[10px]" 
                                   :class="{
                                       'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20': match.status === 'Terminé',
@@ -129,7 +138,6 @@
                                   }"
                                   x-text="match.status"></span>
                             
-                            <!-- BUTEURS : PLUS GROS ET PLUS VISIBLES -->
                             <div class="text-slate-800 dark:text-white text-xs font-bold" x-show="match.scorers && match.scorers.length > 0">
                                 ⚽ <span x-text="match.scorers.map(s => s.player + ' (' + s.goals + ')').join(', ')"></span>
                             </div>
@@ -160,7 +168,6 @@
                     <span class="text-[10px] text-slate-500">buts marqués / match</span>
                 </div>
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-                    <!-- LE (AUTO) A ETE RETIRÉ ICI -->
                     <span class="text-xs text-slate-500 dark:text-slate-400">Points Totaux</span>
                     <div class="text-3xl font-black text-plPurple-700 dark:text-plCyan mt-1" x-text="calculatedPoints"></div>
                     <span class="text-[10px] text-slate-500">3 pts (V) / 1 pt (N)</span>
@@ -237,6 +244,16 @@
     </main>
 
 
+    <!-- ================= MODAL PHOTO DE L'ÉQUIPE (PUBLIC) ================= -->
+    <div x-show="isPhotoModalOpen" x-transition.opacity class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 z-[60]" style="display: none;">
+        <div class="relative w-full max-w-3xl flex flex-col items-center">
+            <button @click="isPhotoModalOpen = false" class="absolute -top-12 right-0 text-white hover:text-plCyan font-bold text-4xl transition-colors">&times;</button>
+            <img :src="currentPhotoUrl" class="w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-white/20">
+            <p class="text-white text-center mt-4 font-bold text-sm bg-black/50 px-4 py-2 rounded-full" x-text="'Équipe du jour - ' + teamName"></p>
+        </div>
+    </div>
+
+
     <!-- ================= ADMIN CONTROL PANEL MODAL ================= -->
     <div x-show="isAdminModalOpen" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full p-6 space-y-6 shadow-2xl my-8">
@@ -271,49 +288,15 @@
                         </select>
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Télécharger le logo / photo</label>
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Télécharger le logo / photo de profil de l'appli</label>
                         <input type="file" accept="image/*" @change="uploadLogo($event)" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-                    </div>
-                </div>
-
-                <!-- Squad Management -->
-                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                    <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">👥 Joueurs (Buteurs)</h3>
-                    <div class="flex gap-2">
-                        <input type="text" x-model="newPlayerName" placeholder="Nom du joueur" class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
-                        <button @click="addPlayer()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-4 py-2 rounded-xl text-xs font-bold">Ajouter</button>
-                    </div>
-                    <div class="flex flex-wrap gap-2 pt-2">
-                        <template x-for="(player, idx) in squad" :key="idx">
-                            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
-                                <span class="text-slate-800 dark:text-white" x-text="player"></span>
-                                <button @click="squad.splice(idx, 1)" class="text-plPink font-bold">&times;</button>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Opponents Pool Management -->
-                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                    <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">🛡️ Équipes Adverses</h3>
-                    <div class="flex gap-2">
-                        <input type="text" x-model="newOpponentName" placeholder="Nom de l'équipe adverse" class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
-                        <button @click="addOpponent()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-4 py-2 rounded-xl text-xs font-bold">Ajouter</button>
-                    </div>
-                    <div class="flex flex-wrap gap-2 pt-2">
-                        <template x-for="(team, tIdx) in allOpponents" :key="tIdx">
-                            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
-                                <span class="text-slate-800 dark:text-white" x-text="team"></span>
-                                <button @click="allOpponents.splice(tIdx, 1)" class="text-plPink font-bold">&times;</button>
-                            </div>
-                        </template>
                     </div>
                 </div>
 
                 <!-- Matchweeks Editor -->
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">📅 Gestion des Matchs</h3>
+                        <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">📅 Gestion des Matchs & Photos</h3>
                         <button @click="addMatchWeek()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ Ajouter Journée</button>
                     </div>
 
@@ -330,7 +313,8 @@
 
                             <div class="space-y-3">
                                 <template x-for="(match, mIdx) in week.matches" :key="match.id">
-                                    <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+                                    <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 relative">
+                                        
                                         <div class="flex justify-between items-center text-[11px] text-slate-600 dark:text-slate-300">
                                             <span class="font-bold text-plPurple-700 dark:text-plCyan" x-text="match.round"></span>
                                             
@@ -368,8 +352,20 @@
                                             </div>
                                         </div>
 
+                                        <!-- CHAMP PHOTO POUR CE MATCH -->
+                                        <div class="flex items-end gap-3 mt-2 border border-slate-100 dark:border-slate-800 p-2 rounded-lg bg-slate-50 dark:bg-slate-950/50">
+                                            <div class="flex-1">
+                                                <label class="block text-[10px] font-bold text-plPurple-700 dark:text-plCyan mb-1">📸 Photo de l'équipe (Ce match uniquement)</label>
+                                                <input type="file" accept="image/*" @change="uploadMatchPhoto($event, match)" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-600 dark:text-slate-300 cursor-pointer">
+                                            </div>
+                                            <div x-show="match.teamPhoto" class="h-10 w-16 bg-cover bg-center rounded border border-slate-300 dark:border-slate-600 shrink-0 relative group" :style="match.teamPhoto ? 'background-image: url(' + match.teamPhoto + ')' : ''">
+                                                <button @click="match.teamPhoto = ''" class="absolute inset-0 bg-red-500/80 text-white font-bold text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded" title="Supprimer la photo">X</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Autres champs : Commentaire et Buteurs -->
                                         <div>
-                                            <label class="block text-[10px] text-slate-500 dark:text-slate-400">Commentaire libre</label>
+                                            <label class="block text-[10px] text-slate-500 dark:text-slate-400 mt-1">Commentaire libre</label>
                                             <input type="text" x-model="match.comment" placeholder="Ex: Résumé..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-slate-200">
                                         </div>
 
@@ -394,7 +390,7 @@
                                     </div>
                                 </template>
 
-                                <button @click="week.matches.push({id: Date.now(), round: 'Match ' + (week.matches.length + 1), opponent: allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: []})" class="w-full bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 text-plPurple-700 dark:text-plCyan border border-plPurple-200 dark:border-plCyan/30 py-2 rounded-xl text-xs font-bold transition">
+                                <button @click="week.matches.push({id: Date.now(), round: 'Match ' + (week.matches.length + 1), opponent: allOpponents[0], timeAndPitch: '10:00 · Terrain', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', teamPhoto: '', scorers: []})" class="w-full bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 text-plPurple-700 dark:text-plCyan border border-plPurple-200 dark:border-plCyan/30 py-2 rounded-xl text-xs font-bold transition">
                                     + Ajouter un match
                                 </button>
                             </div>
@@ -402,10 +398,44 @@
                     </template>
                 </div>
 
+                <!-- Squad & Opponents (Collapsible or just kept as before) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-800 pt-6">
+                    <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                        <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">👥 Joueurs (Buteurs)</h3>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="newPlayerName" placeholder="Nom" class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
+                            <button @click="addPlayer()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-4 py-2 rounded-xl text-xs font-bold">Ajouter</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <template x-for="(player, idx) in squad" :key="idx">
+                                <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
+                                    <span class="text-slate-800 dark:text-white" x-text="player"></span>
+                                    <button @click="squad.splice(idx, 1)" class="text-plPink font-bold">&times;</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                        <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">🛡️ Équipes Adverses</h3>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="newOpponentName" placeholder="Adversaire" class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
+                            <button @click="addOpponent()" class="bg-plPurple-700 hover:bg-plPurple-800 text-white px-4 py-2 rounded-xl text-xs font-bold">Ajouter</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <template x-for="(team, tIdx) in allOpponents" :key="tIdx">
+                                <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2">
+                                    <span class="text-slate-800 dark:text-white" x-text="team"></span>
+                                    <button @click="allOpponents.splice(tIdx, 1)" class="text-plPink font-bold">&times;</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="flex justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-                <button @click="exportToExcel()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">📥 Exporter vers Excel</button>
+            <div class="flex justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800 mt-4">
+                <button @click="exportToExcel()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">📥 Export Excel</button>
                 <div class="flex gap-2">
                     <button @click="isAdminModalOpen = false" class="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold">Fermer</button>
                     <button @click="saveData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-xs font-bold shadow-lg">Enregistrer & Sync Cloud</button>
@@ -423,6 +453,10 @@
                 isAdmin: false,
                 isAdminModalOpen: false,
                 
+                // Variables pour la modale photo
+                isPhotoModalOpen: false,
+                currentPhotoUrl: '',
+
                 teamName: 'FC Gradignan',
                 seasonName: 'Saison 2026/27',
                 textSize: 'text-sm',
@@ -467,11 +501,55 @@
                     localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
                 },
 
+                // Ouvre la photo en grand écran
+                openPhotoModal(url) {
+                    if(url) {
+                        this.currentPhotoUrl = url;
+                        this.isPhotoModalOpen = true;
+                    }
+                },
+
+                // Compresseur d'image automatique pour éviter de bloquer la base de données
+                uploadMatchPhoto(event, match) {
+                    let file = event.target.files[0];
+                    if (file) {
+                        let reader = new FileReader();
+                        reader.onload = (e) => {
+                            let img = new Image();
+                            img.onload = () => {
+                                let canvas = document.createElement('canvas');
+                                let ctx = canvas.getContext('2d');
+                                // Réduit la taille max à 800px pour ne pas surcharger Supabase
+                                let maxDimension = 800;
+                                let width = img.width;
+                                let height = img.height;
+                                
+                                if (width > height && width > maxDimension) {
+                                    height *= maxDimension / width;
+                                    width = maxDimension;
+                                } else if (height > maxDimension) {
+                                    width *= maxDimension / height;
+                                    height = maxDimension;
+                                }
+                                
+                                canvas.width = width;
+                                canvas.height = height;
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                // Sauvegarde en JPEG compressé à 70%
+                                match.teamPhoto = canvas.toDataURL('image/jpeg', 0.7); 
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
                 exportToExcel() {
                     let csv = "Journée,Date,Adversaire,Statut,Buts FC Gradignan,Buts Adversaire,Buteurs,Commentaire\n";
                     this.matchWeeks.forEach(week => {
                         week.matches.forEach(match => {
-                            let buteurs = match.scorers.map(s => s.player + ' (' + s.goals + ')').join(' & ');
+                            let buteurs = match.scorers ? match.scorers.map(s => s.player + ' (' + s.goals + ')').join(' & ') : '';
                             let row = [
                                 `"${week.name}"`, `"${week.date}"`, `"${match.opponent}"`, `"${match.status}"`,
                                 match.scoreUs, match.scoreThem,
@@ -581,7 +659,7 @@
                     let id = 'week_' + Date.now();
                     this.matchWeeks.push({
                         id: id, name: 'Journée ' + (this.matchWeeks.length + 1), date: new Date().toISOString().split('T')[0],
-                        matches: [{ id: Date.now(), round: 'Match 1', opponent: this.allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', scorers: [] }]
+                        matches: [{ id: Date.now(), round: 'Match 1', opponent: this.allOpponents[0], timeAndPitch: '10:00 · Terrain 1', scoreUs: 0, scoreThem: 0, status: 'À venir', comment: '', teamPhoto: '', scorers: [] }]
                     });
                     this.selectedWeek = id;
                 },
