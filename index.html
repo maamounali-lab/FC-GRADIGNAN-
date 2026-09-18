@@ -35,38 +35,38 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans antialiased transition-all duration-300">
 
-    <!-- HEADER BANNER WITH LOGO -->
+    <!-- HEADER BANNER WITH LOGO & RESPONSIVE LAYOUT -->
     <header class="bg-gradient-to-r from-plPurple-900 via-plPurple-800 to-indigo-900 shadow-xl pb-4">
-        <div class="max-w-4xl mx-auto px-4 pt-6">
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center gap-4">
+        <div class="max-w-4xl mx-auto px-4 pt-4 sm:pt-6">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
                     <!-- Team Logo / Photo -->
-                    <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-950 border-2 border-plCyan/40 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-slate-950 border-2 border-plCyan/40 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
                         <img :src="teamLogo" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80'">
                     </div>
-                    <div>
-                        <span class="text-xs font-bold text-plCyan uppercase tracking-widest bg-plPurple-900/80 px-2.5 py-1 rounded-md border border-plCyan/30" x-text="seasonName"></span>
-                        <h1 class="text-2xl font-black text-white mt-1 tracking-tight" x-text="teamName"></h1>
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-xs font-bold text-plCyan uppercase tracking-widest bg-plPurple-900/80 px-2 py-0.5 rounded border border-plCyan/30 inline-block" x-text="seasonName"></span>
+                        <h1 class="text-lg sm:text-2xl font-black text-white leading-tight truncate mt-0.5" x-text="teamName"></h1>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 shrink-0">
                     <!-- Toggle Dark/Light Mode -->
-                    <button @click="toggleTheme()" class="bg-white/10 hover:bg-white/20 text-white w-9 h-9 flex items-center justify-center rounded-full backdrop-blur border border-white/10 transition text-lg" title="Changer le thème">
+                    <button @click="toggleTheme()" class="bg-white/10 hover:bg-white/20 text-white w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full backdrop-blur border border-white/10 transition text-base sm:text-lg" title="Changer le thème">
                         <span x-text="isDarkMode ? '☀️' : '🌙'"></span>
                     </button>
                     <!-- Admin Login Button -->
-                    <button @click="checkAdminAccess()" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur border border-white/10 transition flex items-center gap-1.5">
-                        <span x-text="isAdmin ? '🔓 Admin Actif' : '🔒 Admin'"></span>
+                    <button @click="checkAdminAccess()" class="bg-white/10 hover:bg-white/20 text-white px-2.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-semibold backdrop-blur border border-white/10 transition flex items-center gap-1">
+                        <span x-text="isAdmin ? '🔓 Admin' : '🔒 Admin'"></span>
                     </button>
                 </div>
             </div>
 
             <!-- TABS NAVIGATION -->
-            <div class="flex gap-6 border-b border-white/20 text-sm font-bold">
-                <button @click="activeTab = 'matches'" :class="activeTab === 'matches' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-300 pb-3 hover:text-white'">Matchs</button>
-                <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-300 pb-3 hover:text-white'">Stats Équipe</button>
-                <button @click="activeTab = 'scorers'" :class="activeTab === 'scorers' ? 'border-b-2 border-plCyan text-plCyan pb-3' : 'text-slate-300 pb-3 hover:text-white'">Buteurs</button>
+            <div class="flex gap-4 sm:gap-6 border-b border-white/20 text-xs sm:text-sm font-bold">
+                <button @click="activeTab = 'matches'" :class="activeTab === 'matches' ? 'border-b-2 border-plCyan text-plCyan pb-2 sm:pb-3' : 'text-slate-300 pb-2 sm:pb-3 hover:text-white'">Matchs</button>
+                <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'border-b-2 border-plCyan text-plCyan pb-2 sm:pb-3' : 'text-slate-300 pb-2 sm:pb-3 hover:text-white'">Stats Équipe</button>
+                <button @click="activeTab = 'scorers'" :class="activeTab === 'scorers' ? 'border-b-2 border-plCyan text-plCyan pb-2 sm:pb-3' : 'text-slate-300 pb-2 sm:pb-3 hover:text-white'">Buteurs</button>
             </div>
         </div>
     </header>
@@ -80,7 +80,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white dark:bg-slate-900/90 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div class="flex items-center gap-2 w-full sm:w-auto">
                     <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Journée :</span>
-                    <select x-model="selectedWeek" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-plCyan">
+                    <select x-model="selectedWeek" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-plCyan w-full sm:w-auto">
                         <template x-for="week in matchWeeks" :key="week.id">
                             <option :value="week.id" x-text="week.name + ' (' + week.date + ')'"></option>
                         </template>
@@ -101,32 +101,30 @@
                             <span x-text="match.timeAndPitch"></span>
                         </div>
 
-                        <!-- Score Display -->
-                        <div class="grid grid-cols-7 items-center py-2">
+                        <!-- Score Display avec bouton photo au-dessus du nom -->
+                        <div class="grid grid-cols-7 items-center py-1 gap-1">
                             
-                            <!-- AFFICHAGE DU NOM DE L'EQUIPE + PHOTO - CORRIGÉ POUR MOBILE -->
-                            <div class="col-span-3 text-left font-bold text-sm sm:text-base pl-2 min-w-0">
+                            <!-- ÉQUIPE US + BOUTON PHOTO AU-DESSUS -->
+                            <div class="col-span-3 text-left font-bold text-xs sm:text-base min-w-0 flex flex-col items-start justify-center">
                                 <template x-if="match.teamPhoto">
-                                    <button @click="openPhotoModal(match.teamPhoto)" class="text-plPurple-700 dark:text-plCyan hover:underline flex items-center w-full" title="Voir la photo de l'équipe">
-                                        <span x-text="teamName" class="truncate"></span> 
-                                        <!-- shrink-0 empêche la photo de s'écraser ou de déborder sur mobile -->
-                                        <span class="text-base sm:text-lg shrink-0 ml-1">📸</span>
+                                    <button @click="openPhotoModal(match.teamPhoto)" class="bg-plPurple-100 dark:bg-plPurple-900/60 border border-plPurple-200 dark:border-plCyan/30 text-plPurple-800 dark:text-plCyan px-2 py-0.5 rounded-md text-[10px] font-bold mb-1 flex items-center gap-1 hover:scale-105 transition-transform" title="Voir la photo de l'équipe">
+                                        <span>📸 Photo Équipe</span>
                                     </button>
                                 </template>
-                                <template x-if="!match.teamPhoto">
-                                    <span x-text="teamName" class="block truncate"></span>
-                                </template>
+                                <span x-text="teamName" class="block truncate w-full text-slate-900 dark:text-white"></span>
                             </div>
                             
+                            <!-- SCORE CENTRAL -->
                             <div class="col-span-1 flex justify-center">
-                                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-black text-amber-600 dark:text-amber-400 text-sm tracking-widest shadow-inner flex items-center justify-center min-w-[60px]">
+                                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 px-2 sm:px-3 py-1.5 rounded-xl font-black text-amber-600 dark:text-amber-400 text-xs sm:text-sm tracking-widest shadow-inner flex items-center justify-center min-w-[50px] sm:min-w-[60px]">
                                     <span x-text="['À venir', 'Reporté'].includes(match.status) ? '-' : match.scoreUs"></span>
-                                    <span class="mx-1">-</span>
+                                    <span class="mx-0.5 sm:mx-1">-</span>
                                     <span x-text="['À venir', 'Reporté'].includes(match.status) ? '-' : match.scoreThem"></span>
                                 </div>
                             </div>
 
-                            <div class="col-span-3 text-right font-bold text-sm sm:text-base truncate pr-2 text-slate-600 dark:text-slate-300" x-text="match.opponent"></div>
+                            <!-- ÉQUIPE ADVERSE -->
+                            <div class="col-span-3 text-right font-bold text-xs sm:text-base truncate pl-1 text-slate-600 dark:text-slate-300" x-text="match.opponent"></div>
                         </div>
 
                         <!-- Status & Scorers -->
@@ -163,26 +161,26 @@
         <!-- ================= TAB 2: STATS & TABLE ================= -->
         <div x-show="activeTab === 'stats'" class="space-y-6">
             
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Moyenne Buts / Match</span>
-                    <div class="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1" x-text="avgGoalsPerMatch"></div>
-                    <span class="text-[10px] text-slate-500">buts marqués / match</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm">
+                    <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Moyenne Buts / Match</span>
+                    <div class="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 mt-1" x-text="avgGoalsPerMatch"></div>
+                    <span class="text-[9px] sm:text-[10px] text-slate-500">buts marqués / match</span>
                 </div>
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Points Totaux</span>
-                    <div class="text-3xl font-black text-plPurple-700 dark:text-plCyan mt-1" x-text="calculatedPoints"></div>
-                    <span class="text-[10px] text-slate-500">3 pts (V) / 1 pt (N)</span>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm">
+                    <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Points Totaux</span>
+                    <div class="text-2xl sm:text-3xl font-black text-plPurple-700 dark:text-plCyan mt-1" x-text="calculatedPoints"></div>
+                    <span class="text-[9px] sm:text-[10px] text-slate-500">3 pts (V) / 1 pt (N)</span>
                 </div>
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Différence de Buts</span>
-                    <div class="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1" x-text="goalDiff"></div>
-                    <span class="text-[10px] text-slate-500" x-text="goalsFor + ' pour / ' + goalsAgainst + ' contre'"></span>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm">
+                    <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Différence de Buts</span>
+                    <div class="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 mt-1" x-text="goalDiff"></div>
+                    <span class="text-[9px] sm:text-[10px] text-slate-500" x-text="goalsFor + ' pour / ' + goalsAgainst + ' contre'"></span>
                 </div>
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Bilan (V-N-D)</span>
-                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" x-text="record"></div>
-                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400" x-text="totalPlayed + ' matchs joués'"></span>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm">
+                    <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Bilan (V-N-D)</span>
+                    <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-2" x-text="record"></div>
+                    <span class="text-[9px] sm:text-[10px] text-emerald-600 dark:text-emerald-400" x-text="totalPlayed + ' matchs joués'"></span>
                 </div>
             </div>
 
@@ -290,7 +288,7 @@
                         </select>
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Télécharger le logo / photo de profil de l'appli</label>
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Télécharger le logo de l'équipe</label>
                         <input type="file" accept="image/*" @change="uploadLogo($event)" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
                     </div>
                 </div>
@@ -365,7 +363,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Autres champs : Commentaire et Buteurs -->
                                         <div>
                                             <label class="block text-[10px] text-slate-500 dark:text-slate-400 mt-1">Commentaire libre</label>
                                             <input type="text" x-model="match.comment" placeholder="Ex: Résumé..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-slate-200">
@@ -400,7 +397,7 @@
                     </template>
                 </div>
 
-                <!-- Squad & Opponents (Collapsible or just kept as before) -->
+                <!-- Squad & Opponents -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-800 pt-6">
                     <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
                         <h3 class="text-xs font-bold text-plPurple-700 dark:text-plCyan">👥 Joueurs (Buteurs)</h3>
@@ -455,7 +452,6 @@
                 isAdmin: false,
                 isAdminModalOpen: false,
                 
-                // Variables pour la modale photo
                 isPhotoModalOpen: false,
                 currentPhotoUrl: '',
 
@@ -503,7 +499,6 @@
                     localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
                 },
 
-                // Ouvre la photo en grand écran
                 openPhotoModal(url) {
                     if(url) {
                         this.currentPhotoUrl = url;
@@ -511,7 +506,6 @@
                     }
                 },
 
-                // Compresseur d'image automatique pour éviter de bloquer la base de données
                 uploadMatchPhoto(event, match) {
                     let file = event.target.files[0];
                     if (file) {
@@ -521,7 +515,6 @@
                             img.onload = () => {
                                 let canvas = document.createElement('canvas');
                                 let ctx = canvas.getContext('2d');
-                                // Réduit la taille max à 800px pour ne pas surcharger Supabase
                                 let maxDimension = 800;
                                 let width = img.width;
                                 let height = img.height;
@@ -537,8 +530,6 @@
                                 canvas.width = width;
                                 canvas.height = height;
                                 ctx.drawImage(img, 0, 0, width, height);
-                                
-                                // Sauvegarde en JPEG compressé à 70%
                                 match.teamPhoto = canvas.toDataURL('image/jpeg', 0.7); 
                             };
                             img.src = e.target.result;
